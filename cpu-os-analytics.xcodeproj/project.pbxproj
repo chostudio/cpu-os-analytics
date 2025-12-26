@@ -6,6 +6,10 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		0ECE032F2EFE443100F54190 /* README.md in Sources */ = {isa = PBXBuildFile; fileRef = 0ECE032D2EFE442A00F54190 /* README.md */; };
+/* End PBXBuildFile section */
+
 /* Begin PBXContainerItemProxy section */
 		0ECE03112EFE42C600F54190 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
@@ -27,6 +31,7 @@
 		0ECE03012EFE42C200F54190 /* cpu-os-analytics.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "cpu-os-analytics.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		0ECE03102EFE42C600F54190 /* cpu-os-analyticsTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "cpu-os-analyticsTests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
 		0ECE031A2EFE42C600F54190 /* cpu-os-analyticsUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "cpu-os-analyticsUITests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
+		0ECE032D2EFE442A00F54190 /* README.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -79,6 +84,7 @@
 				0ECE03132EFE42C600F54190 /* cpu-os-analyticsTests */,
 				0ECE031D2EFE42C600F54190 /* cpu-os-analyticsUITests */,
 				0ECE03022EFE42C200F54190 /* Products */,
+				0ECE032D2EFE442A00F54190 /* README.md */,
 			);
 			sourceTree = "<group>";
 		};
@@ -236,6 +242,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				0ECE032F2EFE443100F54190 /* README.md in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
