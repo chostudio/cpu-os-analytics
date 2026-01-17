@@ -8,12 +8,13 @@
 import SwiftUI
 import SwiftData
 
-@main
+@main // u can think of this as the entry point into the app, the main function like in C++
 struct cpu_os_analyticsApp: App {
     var sharedModelContainer: ModelContainer = {
         let schema = Schema([
             Item.self,
         ])
+	  // in swift, for function parameters you must specify what arguments maps to which parameters using colon :, not positional by default
         let modelConfiguration = ModelConfiguration(schema: schema, isStoredInMemoryOnly: false)
 
         do {
