@@ -10,8 +10,10 @@
 
 #include <libproc.h>
 #include <mach/mach.h>
-#include <sys/sysctl.h>
 #include <signal.h>
 #include <sys/param.h>
+#include <sys/sysctl.h>
+
+#include "ProcessMonitor.h"
 
 #endif

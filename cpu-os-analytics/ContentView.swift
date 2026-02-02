@@ -20,7 +20,7 @@ struct ContentView: View {
 		}
 		
 		Text("Tips").font(.headline)
-		Text("If a process shows >100% CPU, it's using multiple cores.").font(.caption).foregroundColor(.secondary)
+		Text("CPU % shows usage per core (100% = one full core). Values can exceed 100% for multi-core usage.").font(.caption).foregroundColor(.secondary)
 		
 		Spacer()
 	  }
