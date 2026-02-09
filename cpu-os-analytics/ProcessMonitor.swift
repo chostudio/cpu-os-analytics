@@ -32,6 +32,7 @@ class ProcessMonitor: ObservableObject {
   @Published var processes: [ProcessInfo] = []
   private var timer: AnyCancellable?
   private var previousData: [Int32: (cpuTime: Double, sampleTime: Double)] = [:]
+  private let refreshQueue = DispatchQueue(label: "com.cpuosanalytics.refresh", qos: .userInitiated)
 
   init() {
 	startMonitoring()
@@ -50,8 +51,8 @@ class ProcessMonitor: ObservableObject {
   }
 
   func refresh() {
-	// Run heavy work on background queue
-	DispatchQueue.global(qos: .userInitiated).async { [weak self] in
+	// Run heavy work on serial queue to prevent concurrent access to previousData
+	refreshQueue.async { [weak self] in
 	  guard let self = self else { return }
 
 	  let maxEntries = 2048

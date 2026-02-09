@@ -2,8 +2,8 @@
 //  ProcessMonitor.c
 //  cpu-os-analytics
 //
-//  Uses libproc (C) to read process data. CPU time from proc_taskinfo is in nanoseconds;
-//  we convert to seconds and let Swift compute percentage from deltas.
+//  Uses libproc (C) to read process data. CPU time from proc_taskinfo is in Mach absolute
+//  time ticks; we convert to seconds via mach_timebase_info and let Swift compute percentage from deltas.
 //
 
 #include "ProcessMonitor.h"
@@ -88,20 +88,20 @@ int process_monitor_snapshot(process_entry_t *entries, int max_entries, int *out
 			name_buf[sizeof(name_buf) - 1] = '\0';
 		}
 
-		/* CPU time: pti_total_user and pti_total_system are in nanoseconds (per Apple/libproc) */
-		uint64_t total_ns = task_info.pti_total_user + task_info.pti_total_system;
-		double cpu_time_sec = (double)total_ns / 1e9;
+		/* CPU time: pti_total_user and pti_total_system are in Mach absolute time ticks.
+		   On Apple Silicon, 1 tick ≠ 1 ns; convert via mach_timebase_info (numer/denom). */
+		uint64_t total_ticks = task_info.pti_total_user + task_info.pti_total_system;
+		mach_timebase_info_data_t tbi;
+		mach_timebase_info(&tbi);
+		double cpu_time_sec = (double)total_ticks * (double)tbi.numer / (double)tbi.denom / 1e9;
 
 		// #region agent log
 		/* DEBUG: Log raw tick values and computed cpu_time for first 3 processes with nonzero CPU (Hypothesis 1,4) */
-		if (logged_count < 3 && total_ns > 0) {
-			mach_timebase_info_data_t tbi;
-			mach_timebase_info(&tbi);
-			double corrected_sec = (double)total_ns * (double)tbi.numer / (double)tbi.denom / 1e9;
+		if (logged_count < 3 && total_ticks > 0) {
 			FILE *lf = fopen("/Users/chrisho/Desktop/cpu-os-analytics/.cursor/debug.log", "a");
 			if (lf) {
-				fprintf(lf, "{\"hypothesisId\":\"H1\",\"location\":\"ProcessMonitor.c:cpu_calc\",\"message\":\"raw_cpu_values\",\"data\":{\"pid\":%d,\"name\":\"%s\",\"pti_total_user\":%llu,\"pti_total_system\":%llu,\"total_ticks\":%llu,\"cpu_time_sec_raw\":%.6f,\"corrected_cpu_time_sec\":%.6f,\"ratio\":%.2f},\"timestamp\":%.0f}\n",
-					pid, name_buf, task_info.pti_total_user, task_info.pti_total_system, total_ns, cpu_time_sec, corrected_sec, corrected_sec/cpu_time_sec, *out_sample_time*1000.0);
+				fprintf(lf, "{\"hypothesisId\":\"H1\",\"runId\":\"post-fix\",\"location\":\"ProcessMonitor.c:cpu_calc\",\"message\":\"raw_cpu_values\",\"data\":{\"pid\":%d,\"name\":\"%s\",\"pti_total_user\":%llu,\"pti_total_system\":%llu,\"total_ticks\":%llu,\"cpu_time_sec\":%.6f},\"timestamp\":%.0f}\n",
+					pid, name_buf, task_info.pti_total_user, task_info.pti_total_system, total_ticks, cpu_time_sec, *out_sample_time*1000.0);
 				fclose(lf);
 			}
 			logged_count++;
