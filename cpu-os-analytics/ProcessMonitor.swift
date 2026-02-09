@@ -84,6 +84,25 @@ class ProcessMonitor: ObservableObject {
 			  // 100% = one full core; can exceed 100% for multi-core
 			  calculatedCPU = (cpuDelta / timeDelta) * 100.0
 			  calculatedCPU = min(calculatedCPU, 10000.0)
+
+			  // #region agent log
+			  /* DEBUG: Log delta calc for high-CPU processes (Hypothesis 1,2,3) */
+			  if calculatedCPU > 0.5 {
+				let logPath = "/Users/chrisho/Desktop/cpu-os-analytics/.cursor/debug.log"
+				let logLine = "{\"hypothesisId\":\"H1_H2_H3\",\"location\":\"ProcessMonitor.swift:delta_calc\",\"message\":\"cpu_delta_calc\",\"data\":{\"pid\":\(e.pid),\"name\":\"\(name)\",\"timeDelta\":\(timeDelta),\"cpuDelta\":\(cpuDelta),\"prevCpuTime\":\(previous.cpuTime),\"currCpuTime\":\(e.cpu_time_sec),\"calculatedCPU\":\(calculatedCPU)},\"timestamp\":\(sampleTime*1000.0)}\n"
+				if let data = logLine.data(using: .utf8) {
+				  if !FileManager.default.fileExists(atPath: logPath) {
+					FileManager.default.createFile(atPath: logPath, contents: nil)
+				  }
+				  let fh = FileHandle(forWritingAtPath: logPath)
+				  if let fh = fh {
+					fh.seekToEndOfFile()
+					fh.write(data)
+					fh.closeFile()
+				  }
+				}
+			  }
+			  // #endregion
 			}
 		  }
 		}

@@ -12,6 +12,8 @@
 #include <sys/time.h>
 #include <string.h>
 #include <stdlib.h>
+#include <stdio.h>
+#include <mach/mach_time.h>
 
 static double timeval_to_seconds(const struct timeval *tv) {
 	return (double)tv->tv_sec + (double)tv->tv_usec / 1000000.0;
@@ -51,6 +53,21 @@ int process_monitor_snapshot(process_entry_t *entries, int max_entries, int *out
 	pid_t *pids = (pid_t *)pids_buf;
 	int num_pids = bytes_used / (int)sizeof(pid_t);
 
+	// #region agent log
+	/* DEBUG: Log mach_timebase_info to check tick-to-nanosecond conversion (Hypothesis 1) */
+	{
+		mach_timebase_info_data_t tbi;
+		mach_timebase_info(&tbi);
+		FILE *lf = fopen("/Users/chrisho/Desktop/cpu-os-analytics/.cursor/debug.log", "a");
+		if (lf) {
+			fprintf(lf, "{\"hypothesisId\":\"H1\",\"location\":\"ProcessMonitor.c:timebase\",\"message\":\"mach_timebase_info\",\"data\":{\"numer\":%u,\"denom\":%u,\"ns_per_tick\":%.6f},\"timestamp\":%.0f}\n",
+				tbi.numer, tbi.denom, (double)tbi.numer/(double)tbi.denom, *out_sample_time*1000.0);
+			fclose(lf);
+		}
+	}
+	// #endregion
+
+	int logged_count = 0;
 	int written = 0;
 	for (int i = 0; i < num_pids && written < max_entries; i++) {
 		pid_t pid = pids[i];
@@ -74,6 +91,22 @@ int process_monitor_snapshot(process_entry_t *entries, int max_entries, int *out
 		/* CPU time: pti_total_user and pti_total_system are in nanoseconds (per Apple/libproc) */
 		uint64_t total_ns = task_info.pti_total_user + task_info.pti_total_system;
 		double cpu_time_sec = (double)total_ns / 1e9;
+
+		// #region agent log
+		/* DEBUG: Log raw tick values and computed cpu_time for first 3 processes with nonzero CPU (Hypothesis 1,4) */
+		if (logged_count < 3 && total_ns > 0) {
+			mach_timebase_info_data_t tbi;
+			mach_timebase_info(&tbi);
+			double corrected_sec = (double)total_ns * (double)tbi.numer / (double)tbi.denom / 1e9;
+			FILE *lf = fopen("/Users/chrisho/Desktop/cpu-os-analytics/.cursor/debug.log", "a");
+			if (lf) {
+				fprintf(lf, "{\"hypothesisId\":\"H1\",\"location\":\"ProcessMonitor.c:cpu_calc\",\"message\":\"raw_cpu_values\",\"data\":{\"pid\":%d,\"name\":\"%s\",\"pti_total_user\":%llu,\"pti_total_system\":%llu,\"total_ticks\":%llu,\"cpu_time_sec_raw\":%.6f,\"corrected_cpu_time_sec\":%.6f,\"ratio\":%.2f},\"timestamp\":%.0f}\n",
+					pid, name_buf, task_info.pti_total_user, task_info.pti_total_system, total_ns, cpu_time_sec, corrected_sec, corrected_sec/cpu_time_sec, *out_sample_time*1000.0);
+				fclose(lf);
+			}
+			logged_count++;
+		}
+		// #endregion
 
 		/* Memory: resident size from proc_taskinfo (avoids proc_pid_rusage which can fault) */
 		double memory_mb = (double)task_info.pti_resident_size / (1024.0 * 1024.0);
