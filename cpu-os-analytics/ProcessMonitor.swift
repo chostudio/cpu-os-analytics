@@ -42,8 +42,8 @@ class ProcessMonitor: ObservableObject {
 	// Do an initial refresh to populate previousData, then start timer
 	refresh()
 
-	// Refresh every 0.5 seconds for more accurate CPU readings (Activity Monitor samples frequently)
-	timer = Timer.publish(every: 0.5, on: .main, in: .common)
+	// Refresh every 5 seconds
+	timer = Timer.publish(every: 5.0, on: .main, in: .common)
 	  .autoconnect()
 	  .sink { [weak self] _ in
 		self?.refresh()
