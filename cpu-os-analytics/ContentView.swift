@@ -16,6 +16,8 @@ struct ContentView: View {
 	  VStack(alignment: .leading, spacing: 16) {
 		Text("System Health").font(.headline)
 		
+		CPURingChartWithLegend(processes: monitor.processes)
+
 		GroupBox("Total Processes") {
 		  Text("\(monitor.processes.count)").font(.title)
 		}
@@ -71,7 +73,7 @@ struct ContentView: View {
 		.disabled(advisor.isGenerating)
 	  }
 	  .padding()
-	  .frame(minWidth: 220)
+	  .frame(minWidth: 280)
 	} detail: {
 	  VStack(spacing: 0) {
 		// Search Bar
