@@ -11,7 +11,8 @@ struct ContentView: View {
   }
   
   var body: some View {
-	NavigationSplitView {
+	TabView {
+	  NavigationSplitView {
 	  // Sidebar for Stats
 	  VStack(alignment: .leading, spacing: 16) {
 		Text("System Health").font(.headline)
@@ -112,6 +113,15 @@ struct ContentView: View {
 		  }
 		}
 	  }
+	}
+	.tabItem {
+	  Label("Processes", systemImage: "list.bullet.rectangle")
+	}
+
+	  PowerThermalView()
+		.tabItem {
+		  Label("Power & Thermal", systemImage: "thermometer.medium")
+		}
 	}
 	.frame(minWidth: 900, minHeight: 600)
   }
