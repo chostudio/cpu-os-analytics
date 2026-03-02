@@ -4,12 +4,19 @@ struct ContentView: View {
   @StateObject private var monitor = ProcessMonitor()
   @StateObject private var advisor = AIAdvisor()
   @State private var searchText = ""
-  
+  @State private var sortOrder: [KeyPathComparator<ProcessInfo>] = []
+
   var filteredProcesses: [ProcessInfo] {
-	if searchText.isEmpty { return monitor.processes }
-	return monitor.processes.filter { $0.name.localizedCaseInsensitiveContains(searchText) }
+    let base: [ProcessInfo]
+    if searchText.isEmpty {
+      base = monitor.processes
+    } else {
+      base = monitor.processes.filter { $0.name.localizedCaseInsensitiveContains(searchText) }
+    }
+    // Apply current sort order from table headers
+    return sortOrder.isEmpty ? base : base.sorted(using: sortOrder)
   }
-  
+
   var body: some View {
 	TabView {
 	  NavigationSplitView {
@@ -31,7 +38,7 @@ struct ContentView: View {
 		  Divider()
 		  
 		  HStack {
-			Image(systemName: "sparkles")
+			Image(sysutemName: "sparkles")
 			  .foregroundStyle(.purple)
 			Text("AI Advice").font(.headline)
 		  }
@@ -94,15 +101,25 @@ struct ContentView: View {
 			Spacer()
 		  }
 		} else {
-		  Table(filteredProcesses) {
-			TableColumn("PID") { Text("\($0.processID)").foregroundColor(.secondary) }
-			TableColumn("Name") { Text($0.name).bold() }
-			TableColumn("CPU %") { process in
+		  Table(filteredProcesses, sortOrder: $sortOrder) {
+			TableColumn("PID", value: \.processID) { process in
+			  Text("\(process.processID)")
+				.foregroundColor(.secondary)
+			}
+			TableColumn("Name", value: \.name) { process in
+			  Text(process.name)
+				.bold()
+			}
+			TableColumn("CPU %", value: \.cpuUsage) { process in
 			  Text(String(format: "%.1f%%", process.cpuUsage))
 				.foregroundColor(process.cpuUsage > 50 ? .red : .orange)
 			}
-			TableColumn("Memory") { Text(String(format: "%.0f MB", $0.memory)) }
-			TableColumn("Threads") { Text("\($0.threads)") }
+			TableColumn("Memory", value: \.memory) { process in
+			  Text(String(format: "%.0f MB", process.memory))
+			}
+			TableColumn("Threads", value: \.threads) { process in
+			  Text("\(process.threads)")
+			}
 			TableColumn("Action") { process in
 			  Button("End") {
 				monitor.killProcess(pid: process.processID)

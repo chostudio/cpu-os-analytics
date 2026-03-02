@@ -10,7 +10,8 @@ import Combine
 
 // Updated model to include sampling data
 struct ProcessInfo: Identifiable {
-  let id = UUID()
+  /// Stable identity so SwiftUI can diff rows efficiently
+  var id: Int32 { processID }
   let processID: Int32
   let name: String
   var cpuUsage: Double

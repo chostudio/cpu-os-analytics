@@ -32,11 +32,7 @@ struct CPURingChart: View {
     guard total > 0 else { return [] }
 
     let top = Array(processes.prefix(maxSegments))
-    let otherSum = processes.dropFirst(maxSegments).reduce(0) { $0 + $1.cpuUsage }
-    var items: [(name: String, cpu: Double)] = top.map { ($0.name, $0.cpuUsage) }
-    if otherSum > 0 {
-      items.append(("Other", otherSum))
-    }
+    let items: [(name: String, cpu: Double)] = top.map { ($0.name, $0.cpuUsage) }
 
     var angle: Double = -90 // start at top (12 o'clock), in degrees
     let totalForAngles = items.reduce(0) { $0 + $1.cpu }
@@ -115,11 +111,7 @@ struct CPURingChartWithLegend: View {
     guard total > 0 else { return [] }
 
     let top = Array(processes.prefix(maxSegments))
-    let otherSum = processes.dropFirst(maxSegments).reduce(0) { $0 + $1.cpuUsage }
-    var items: [(name: String, cpu: Double)] = top.map { ($0.name, $0.cpuUsage) }
-    if otherSum > 0 {
-      items.append(("Other", otherSum))
-    }
+    let items: [(name: String, cpu: Double)] = top.map { ($0.name, $0.cpuUsage) }
 
     return items.enumerated().map { index, item in
       (item.name, item.cpu, segmentColors[index % segmentColors.count])
