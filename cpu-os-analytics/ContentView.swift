@@ -38,7 +38,7 @@ struct ContentView: View {
 		  Divider()
 		  
 		  HStack {
-			Image(sysutemName: "sparkles")
+			Image(systemName: "sparkles")
 			  .foregroundStyle(.purple)
 			Text("AI Advice").font(.headline)
 		  }
